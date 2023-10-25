@@ -11,6 +11,8 @@ export default function Weather() {
   const [userLocationData, setUserLocationData] = useState({ ready: false });
   const [city, setCity] = useState("");
   const { showBoundary } = useErrorBoundary();
+  let [loaded, setLoaded] = useState(false);
+  let [forecast, setForecast] = useState(null);
 
   function handleResponse(response) {
     // Extract and format the relevant data from the response
@@ -26,7 +28,13 @@ export default function Weather() {
       city: response.data?.name,
     });
   }
-  
+
+  function handleForcastResponse(response) {
+    // Set the 'forecast' state with the response data and mark the data as loaded
+    setForecast(response?.data?.list);
+    setLoaded(true);
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
     // Trigger the search function when the form is submitted
@@ -36,6 +44,15 @@ export default function Weather() {
   function handleCityChange(event) {
     // Update the 'city' state when the user inputs a new city name
     setCity(event.target.value);
+  }
+
+  const load = async (latitude, longitude) => {
+    // Extract latitude and longitude from 'props.coordinates'
+    // Create the API URL for fetching weather forecast data
+    let apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&cnt=5`;
+
+    // Make an API request to fetch weather forecast data and call 'handleResponse'
+    axios.get(apiUrl).then(handleForcastResponse);
   }
   
   useEffect(() => {
@@ -51,12 +68,10 @@ export default function Weather() {
           ) {
             // Fetch weather data from an API using the user's coordinates
             fetchUserGeolocationData(latitude, longitude);
+            load(latitude, longitude)
           } else {
             // Handle the case where geolocation data is not available
-            fetchUserGeolocationData(
-              6.5765,
-              3.3522
-            );
+            console.log("Location is invalid")
           }
         },
         (error) => {
@@ -87,7 +102,7 @@ export default function Weather() {
     }
   };
   
-  //function helps in fetch city api
+  //function helps in fetch city
   function search() {
     let apiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${apiKey}&units=metric`;
     axios
@@ -95,6 +110,7 @@ export default function Weather() {
       .then((response) => {
         const { lat, lon } = response?.data[0];
         fetchUserGeolocationData(lat, lon);
+        load(lat, lon);
       })
       .catch((error) => {
         console.error("Error fetching geolocation data:", error);
@@ -128,7 +144,7 @@ export default function Weather() {
           </div>
         </form>
         <WeatherInfo data={userLocationData} />
-        <WeatherForecast coordinates={userLocationData?.coordinates} />
+        <WeatherForecast coordinates={userLocationData?.coordinates} forecast={forecast}  loaded={load} />
       </div>
     </>
   );

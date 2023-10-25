@@ -48,6 +48,6 @@ React\
 axios\
 react-error-boundary\
 bootstrap\
-react-animated-weather\
+react-animated-weather
 
 

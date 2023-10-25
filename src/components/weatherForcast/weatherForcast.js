@@ -3,25 +3,31 @@ import "./weatherForcast.css";
 import axios from "axios";
 import WeatherForecastDay from "./weatherForcastDay";
 
+const apiKey = process.env.REACT_APP_API_KEY;
 export default function WeatherForecast(props) {
   let [loaded, setLoaded] = useState(false);
   let [forecast, setForecast] = useState(null);
 
   useEffect(() => {
+    // When the 'props.coordinates' value changes, set 'loaded' to 'false' to indicate data loading
     setLoaded(false);
   }, [props?.coordinates]);
 
   function handleResponse(response) {
+    // Set the 'forecast' state with the response data and mark the data as loaded
     setForecast(response?.data?.list);
     setLoaded(true);
   }
 
   function load() {
-    let apiKey = "5f472b7acba333cd8a035ea85a0d4d4c";
+    // Extract latitude and longitude from 'props.coordinates'
     let longitude = props?.coordinates?.lon;
     let latitude = props?.coordinates?.lat;
+
+    // Create the API URL for fetching weather forecast data
     let apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&cnt=5`;
 
+    // Make an API request to fetch weather forecast data and call 'handleResponse'
     axios.get(apiUrl).then(handleResponse);
   }
 

@@ -5,17 +5,15 @@ import axios from "axios";
 import "./weather.css";
 import { useErrorBoundary } from "react-error-boundary";
 
-
 const apiKey = process.env.REACT_APP_API_KEY;
 
 export default function Weather() {
   const [userLocationData, setUserLocationData] = useState({ ready: false });
   const [city, setCity] = useState("");
   const { showBoundary } = useErrorBoundary();
- 
 
   function handleResponse(response) {
-    // console.log(response.data)
+    // Extract and format the relevant data from the response
     setUserLocationData({
       ready: true,
       coordinates: response.data?.coord,
@@ -28,23 +26,24 @@ export default function Weather() {
       city: response.data?.name,
     });
   }
-
+  
   function handleSubmit(event) {
     event.preventDefault();
+    // Trigger the search function when the form is submitted
     search();
   }
-
+  
   function handleCityChange(event) {
+    // Update the 'city' state when the user inputs a new city name
     setCity(event.target.value);
   }
-
+  
   useEffect(() => {
     // Automatically fetch weather data based on the user's location when the component mounts
     if (!city) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          console.log(latitude, longitude);
           // Check if latitude and longitude are defined
           if (
             typeof latitude !== "undefined" &&
@@ -54,7 +53,10 @@ export default function Weather() {
             fetchUserGeolocationData(latitude, longitude);
           } else {
             // Handle the case where geolocation data is not available
-            console.error("Latitude and/or longitude is undefined.");
+            fetchUserGeolocationData(
+              6.5765,
+              3.3522
+            );
           }
         },
         (error) => {
@@ -64,21 +66,28 @@ export default function Weather() {
       );
     }
   }, []);
-
+  
   const fetchUserGeolocationData = async (latitude, longitude) => {
     try {
-      // Make the Axios request.
-      let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`;
-      await axios.get(apiUrl).then(handleResponse);
-      // If the request fails with a 400 status code, display a custom error message to the user.
+      if (latitude && longitude) {
+        // Make the Axios request.
+        let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`;
+        await axios.get(apiUrl).then(handleResponse);
+      } else {
+        // Handle the case when latitude or longitude is undefined.
+        showBoundary("Latitude or longitude is undefined.");
+        // setError("Latitude or longitude is undefined.");
+      }
     } catch (error) {
-      if (error) {
+      if (error.response) {
         showBoundary(error.response.message);
+        // Handle API error responses and display a fallback message
         // setError(error.response.message);
       }
     }
   };
-
+  
+  //function helps in fetch city api
   function search() {
     let apiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${apiKey}&units=metric`;
     axios
@@ -91,6 +100,7 @@ export default function Weather() {
         console.error("Error fetching geolocation data:", error);
       });
   }
+  
 
   // if(error) return <p> Error </p>
 

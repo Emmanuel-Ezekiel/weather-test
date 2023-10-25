@@ -3,19 +3,19 @@ import WeatherInfo from "./weatherInfo";
 import WeatherForecast from "../weatherForcast/weatherForcast";
 import axios from "axios";
 import "./weather.css";
-import useGeoLocation from "../../hooks/useGeoLocation";
+import { useErrorBoundary } from "react-error-boundary";
+
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
-export default function Weather(props) {
+export default function Weather() {
   const [userLocationData, setUserLocationData] = useState({ ready: false });
-  const [searchedCityData, setSearchedCityData] = useState({ ready: false });
   const [city, setCity] = useState("");
-  const [loading, setLoading] = useState(false);
-  const location = useGeoLocation();
+  const { showBoundary } = useErrorBoundary();
+ 
 
   function handleResponse(response) {
-    console.log(response.data)
+    // console.log(response.data)
     setUserLocationData({
       ready: true,
       coordinates: response.data?.coord,
@@ -27,20 +27,7 @@ export default function Weather(props) {
       wind: response.data?.wind.speed,
       city: response.data?.name,
     });
-   
   }
-
-  // setWeatherData({
-  //   ready: true,
-  //   coordinates: response.data.coord,
-  //   temperature: response.data.main.temp,
-  //   humidity: response.data.main.humidity,
-  //   date: new Date(response.data.dt * 1000),
-  //   description: response.data.weather[0].description,
-  //   icon: response.data.weather[0].icon,
-  //   wind: response.data.wind.speed,
-  //   city: response.data.name,
-  // });
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -50,86 +37,6 @@ export default function Weather(props) {
   function handleCityChange(event) {
     setCity(event.target.value);
   }
-
-  // useEffect(() => {
-  //   // Automatically fetch weather data based on the user's location when the component mounts
-  //   if (!city) {
-  //     let timeoutId;
-
-  //     const handlePosition = (position) => {
-  //       const { latitude, longitude } = position.coords;
-  //       console.log(latitude, longitude);
-  //       // Check if latitude and longitude are defined
-  //       if (typeof latitude !== "undefined" && typeof longitude !== "undefined") {
-  //         // Fetch weather data from an API using the user's coordinates
-  //         fetchUserGeolocationData(latitude, longitude);
-  //       } else {
-  //         // Handle the case where geolocation data is not available
-  //         console.error("Latitude and/or longitude is undefined.");
-  //       }
-  //     };
-
-  //     const handlePositionError = (error) => {
-  //       // Handle geolocation errors
-  //       console.error("Geolocation error:", error);
-  //     };
-
-  //     const geolocationOptions = {
-  //       timeout: 5000, // Set a timeout of 5 seconds
-  //     };
-
-  //     // Request user's geolocation
-  //     navigator.geolocation.getCurrentPosition(
-  //       handlePosition,
-  //       handlePositionError,
-  //       geolocationOptions
-  //     );
-
-  //     // Set a timeout to retry geolocation if coordinates are not obtained within the timeout period
-  //     timeoutId = setTimeout(() => {
-  //       console.error("Geolocation request timed out.");
-  //       // Retry geolocation request
-  //       navigator.geolocation.getCurrentPosition(
-  //         handlePosition,
-  //         handlePositionError,
-  //         geolocationOptions
-  //       );
-  //     }, geolocationOptions.timeout);
-
-  //     // Clear the timeout if coordinates are obtained before the timeout period
-  //     return () => clearTimeout(timeoutId);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   // Attempt to retrieve user's location from local storage
-  //   if (!city) {
-  //     const savedUserLocationData = localStorage.getItem("userLocationData");
-  //     const data = JSON.parse(savedUserLocationData);
-  //     if (savedUserLocationData) {
-  //       if (
-  //         typeof latitude !== "undefined" &&
-  //         typeof longitude !== "undefined"
-  //       ) {
-  //         // Fetch weather data from an API using the user's coordinates
-  //         fetchUserGeolocationData(data.lat, data.lon);
-  //       }
-
-  //     } else {
-  //       // Geolocation request
-  //       navigator.geolocation.getCurrentPosition(
-  //         (position) => {
-  //           const { latitude, longitude } = position.coords;
-  //           console.log(latitude, longitude);
-  //           fetchUserGeolocationData(latitude, longitude);
-  //         },
-  //         (error) => {
-  //           console.error("Geolocation error:", error);
-  //         }
-  //       );
-  //     }
-  //   }
-  // }, []);
 
   useEffect(() => {
     // Automatically fetch weather data based on the user's location when the component mounts
@@ -158,18 +65,34 @@ export default function Weather(props) {
     }
   }, []);
 
-  const fetchUserGeolocationData = (latitude, longitude) => {
-    let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`;
-    axios.get(apiUrl).then(handleResponse);
-
-    // Make API request with latitude and longitude
-    // Update weatherData state with the response
+  const fetchUserGeolocationData = async (latitude, longitude) => {
+    try {
+      // Make the Axios request.
+      let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`;
+      await axios.get(apiUrl).then(handleResponse);
+      // If the request fails with a 400 status code, display a custom error message to the user.
+    } catch (error) {
+      if (error) {
+        showBoundary(error.response.message);
+        // setError(error.response.message);
+      }
+    }
   };
 
   function search() {
-    let apiUrl = `https://api.openweathermap.org/data/2.5/direct?q=${city}&appid=${apiKey}&units=metric`;
-    axios.get(apiUrl).then(handleResponse);
+    let apiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${apiKey}&units=metric`;
+    axios
+      .get(apiUrl)
+      .then((response) => {
+        const { lat, lon } = response?.data[0];
+        fetchUserGeolocationData(lat, lon);
+      })
+      .catch((error) => {
+        console.error("Error fetching geolocation data:", error);
+      });
   }
+
+  // if(error) return <p> Error </p>
 
   return (
     <>
@@ -195,9 +118,7 @@ export default function Weather(props) {
           </div>
         </form>
         <WeatherInfo data={userLocationData} />
-        <WeatherForecast
-          coordinates={userLocationData?.coordinates}
-        />
+        <WeatherForecast coordinates={userLocationData?.coordinates} />
       </div>
     </>
   );

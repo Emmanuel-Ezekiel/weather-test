@@ -3,24 +3,33 @@ import WeatherIcon from "../../utils/weatherIcon";
 
 export default function WeatherForecastDay(props) {
   function maxTemperature() {
-    let temperature = Math.round(props.data.main.temp_max);
+    let temperature = Math.round(props.data?.main?.temp_max);
     return `${temperature}°`;
   }
 
   function minTemperature() {
-    let temperature = Math.round(props.data.main.temp_min);
+    let temperature = Math.round(props.data?.main?.temp_min);
     return `${temperature}°`;
   }
 
+  // function day() {
+  //   let date = new Date(props?.data?.dt * 1000);
+  //   let day = date?.getDay();
+
+  //   let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  //   return days[day];
+  // }
+
   function day() {
-    let date = new Date(props.data.dt * 1000);
-    let day = date?.getDay();
-
-    let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-    return days[day];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const date = new Date(props?.data?.dt * 1000);
+    const dayIndex = date?.getDay();
+  
+    return days[dayIndex];
   }
 
+  
   return (
     <div>
       
@@ -30,7 +39,7 @@ export default function WeatherForecastDay(props) {
         src={`http://openweathermap.org/img/wn/${props?.data?.weather[0]?.icon}@2x.png`}
         alt=""
       />
-      <p>{props.data.weather[0].description}</p>
+      <p>{props?.data?.weather[0]?.description}</p>
       <div className="WeatherForecast-temperatures">
         <span className="WeatherForecast-temperature-max">
           {maxTemperature()}

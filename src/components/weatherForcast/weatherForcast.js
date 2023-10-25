@@ -7,15 +7,12 @@ export default function WeatherForecast(props) {
   let [loaded, setLoaded] = useState(false);
   let [forecast, setForecast] = useState(null);
 
-  console.log(props.lon, props.lat);
-
   useEffect(() => {
     setLoaded(false);
-  }, [props.coordinates]);
+  }, [props?.coordinates]);
 
   function handleResponse(response) {
-    console.log("see", response?.data?.list);
-    setForecast(response.data?.list);
+    setForecast(response?.data?.list);
     setLoaded(true);
   }
 
@@ -31,12 +28,12 @@ export default function WeatherForecast(props) {
   if (loaded) {
     return (
       <div className="WeatherForecast">
+        <h1>5 days Forecast</h1>
         <div className="row">
-          <h1>5 days Forecast</h1>
           {forecast?.map(function (dailyForecast, index) {
             if (index < 5) {
               return (
-                <div className="col" key={index}>
+                <div className="col-4" key={index}>
                   <WeatherForecastDay data={dailyForecast} />
                 </div>
               );

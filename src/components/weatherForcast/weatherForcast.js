@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./weatherForcast.css";
-import axios from "axios";
 import WeatherForecastDay from "./weatherForcastDay";
 
-const apiKey = process.env.REACT_APP_API_KEY;
 export default function WeatherForecast(props) {
- 
-
-
-
   if (props.loaded) {
     return (
       <div className="WeatherForecast">
@@ -29,7 +23,6 @@ export default function WeatherForecast(props) {
       </div>
     );
   } else {
-    // load();
     return <p>Loading</p>;
   }
 }

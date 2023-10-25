@@ -17,6 +17,7 @@ export default function Weather() {
   function handleResponse(response) {
     // Extract and format the relevant data from the response
     setUserLocationData({
+      ...userLocationData,
       ready: true,
       coordinates: response.data?.coord,
       temperature: response.data.main?.temp,
@@ -46,12 +47,11 @@ export default function Weather() {
     setCity(event.target.value);
   }
 
-  const load = async (latitude, longitude) => {
-    // Extract latitude and longitude from 'props.coordinates'
+  const handleForcast = async (latitude, longitude) => {
     // Create the API URL for fetching weather forecast data
     let apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&cnt=5`;
 
-    // Make an API request to fetch weather forecast data and call 'handleResponse'
+    // Make an API request to fetch weather forecast data and call 'handleForecastResponse'
     axios.get(apiUrl).then(handleForcastResponse);
   }
   
@@ -68,7 +68,7 @@ export default function Weather() {
           ) {
             // Fetch weather data from an API using the user's coordinates
             fetchUserGeolocationData(latitude, longitude);
-            load(latitude, longitude)
+            handleForcast(latitude, longitude) //function for fetching forecast
           } else {
             // Handle the case where geolocation data is not available
             console.log("Location is invalid")
@@ -110,7 +110,7 @@ export default function Weather() {
       .then((response) => {
         const { lat, lon } = response?.data[0];
         fetchUserGeolocationData(lat, lon);
-        load(lat, lon);
+        handleForcast(lat, lon);
       })
       .catch((error) => {
         console.error("Error fetching geolocation data:", error);
@@ -144,7 +144,7 @@ export default function Weather() {
           </div>
         </form>
         <WeatherInfo data={userLocationData} />
-        <WeatherForecast coordinates={userLocationData?.coordinates} forecast={forecast}  loaded={load} />
+        <WeatherForecast coordinates={userLocationData?.coordinates} forecast={forecast}  loaded={loaded} />
       </div>
     </>
   );

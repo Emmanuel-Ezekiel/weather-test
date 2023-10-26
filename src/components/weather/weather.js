@@ -31,7 +31,6 @@ export default function Weather() {
   }
 
   function handleForcastResponse(response) {
-    // Set the 'forecast' state with the response data and mark the data as loaded
     setForecast(response?.data?.list);
     setLoaded(true);
   }
@@ -48,9 +47,8 @@ export default function Weather() {
   }
 
   const handleForcast = async (latitude, longitude) => {
-    // Create the API URL for fetching weather forecast data
+    setLoaded(false)
     let apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&cnt=5`;
-
     // Make an API request to fetch weather forecast data and call 'handleForecastResponse'
     axios.get(apiUrl).then(handleForcastResponse);
   }
@@ -117,8 +115,6 @@ export default function Weather() {
       });
   }
   
-
-  // if(error) return <p> Error </p>
 
   return (
     <>

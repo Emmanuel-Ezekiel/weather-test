@@ -13,7 +13,7 @@ Provides a clear and concise UI that displays weather information with appropria
 ### Requirements:
 
 Node.js\
-yarn\
+yarn
 
 Installation:
 
@@ -25,7 +25,7 @@ Install the dependencies:\
 yarn install
 
 
-Usage:\
+Usage:
 
 ### Start the development server:
 yarn start

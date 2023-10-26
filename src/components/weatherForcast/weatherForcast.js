@@ -23,6 +23,6 @@ export default function WeatherForecast(props) {
       </div>
     );
   } else {
-    return <p>Loading</p>;
+    return <p style={{ textAlign: "center" }}>Loading</p>;
   }
 }
